@@ -313,6 +313,69 @@
           font-size: 25px;
         }
       }
+
+      /* Reminder assistant: matches the existing VocalDesk theme. */
+      .reminder-section {
+        margin-top: 18px;
+      }
+      .reminder-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 20px;
+      }
+      .reminder-actions {
+        display: flex;
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .reminder-actions .primary {
+        flex: 1;
+      }
+      .reminder-actions .secondary {
+        flex-shrink: 0;
+      }
+      .reminder-actions button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .reminder-list {
+        display: grid;
+        gap: 10px;
+        max-height: 320px;
+        overflow-y: auto;
+      }
+      .reminder-item {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 13px;
+        background: #0b1527;
+      }
+      .reminder-item strong {
+        display: block;
+        overflow-wrap: anywhere;
+        margin-bottom: 5px;
+      }
+      .reminder-item small {
+        color: var(--muted);
+      }
+      .reminder-note {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .reminder-alert {
+        background: #403013;
+        border: 1px solid #af8128;
+        color: #ffe7a0;
+        padding: 12px;
+        border-radius: 10px;
+        margin: 12px 0;
+      }
+      @media (max-width: 900px) {
+        .reminder-grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
 
@@ -411,6 +474,60 @@
               <p class="small">🧠 2. Gemini understands the problem</p>
               <p class="small">⚙️ 3. FastAPI creates a real ticket</p>
               <p class="small">🔊 4. Receive spoken confirmation</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card reminder-section" id="reminderAssistant">
+          <div class="history-top">
+            <h2>⏰ AI Voice Reminders</h2>
+            <span class="tag">Gemini Powered</span>
+          </div>
+          <div class="reminder-grid">
+            <div>
+              <p class="small">
+                Say: “Remind me to submit my assignment tomorrow at 5 PM.”
+              </p>
+              <textarea
+                id="reminderText"
+                placeholder="Speak or type a reminder with a date and time..."
+              ></textarea>
+              <div class="reminder-actions">
+                <button
+                  class="secondary"
+                  id="reminderMicBtn"
+                  onclick="listenReminder()"
+                >
+                  🎙 Speak
+                </button>
+                <button
+                  class="primary"
+                  id="reminderSubmitBtn"
+                  onclick="submitReminder()"
+                >
+                  ✨ Create Reminder
+                </button>
+              </div>
+              <div class="response" id="reminderResult" role="status">
+                Ready to create a reminder.
+              </div>
+              <p class="reminder-note">
+                Reminders are saved in the database. Due alerts and spoken
+                notifications work only while this page stays open. This
+                prototype does not send notifications when the site is closed.
+              </p>
+            </div>
+            <div>
+              <div class="history-top">
+                <h2>Saved Reminders</h2>
+                <button class="secondary" onclick="loadReminders()">
+                  ↻ Refresh
+                </button>
+              </div>
+              <div id="dueReminderAlerts" aria-live="polite"></div>
+              <div class="reminder-list" id="reminderList">
+                <p class="small">Loading reminders...</p>
+              </div>
             </div>
           </div>
         </section>
@@ -654,6 +771,173 @@
           cell.textContent = "Could not load tickets: " + error.message;
         }
       }
+
+      // Reminder operations use the working FastAPI endpoints.
+      const reminderText = document.getElementById("reminderText");
+      const reminderResult = document.getElementById("reminderResult");
+      const reminderSubmitBtn = document.getElementById("reminderSubmitBtn");
+      const reminderMicBtn = document.getElementById("reminderMicBtn");
+      const remindedIds = new Set();
+      let reminderSubmitting = false;
+      let reminderListening = false;
+      let remindersInitialized = false;
+      let cachedReminders = [];
+
+      function listenReminder() {
+        if (reminderListening) return;
+        const Recognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Recognition) {
+          reminderResult.textContent =
+            "Voice recognition unavailable. Try Google Chrome or type your reminder.";
+          return;
+        }
+        const recognition = new Recognition();
+        recognition.lang = "en-IN";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.onstart = () => {
+          reminderListening = true;
+          reminderMicBtn.disabled = true;
+          reminderMicBtn.textContent = "🔴 Listening...";
+          reminderResult.textContent = "Listening for your reminder...";
+        };
+        recognition.onresult = (event) => {
+          reminderText.value = event.results[0][0].transcript;
+          reminderResult.textContent =
+            "Voice recognized. Check the reminder, then click Create Reminder.";
+        };
+        recognition.onerror = (event) => {
+          reminderResult.textContent = "Microphone error: " + event.error;
+        };
+        recognition.onend = () => {
+          reminderListening = false;
+          reminderMicBtn.disabled = false;
+          reminderMicBtn.textContent = "🎙 Speak";
+        };
+        try {
+          recognition.start();
+        } catch (error) {
+          reminderResult.textContent =
+            "Could not start microphone: " + error.message;
+        }
+      }
+
+      async function submitReminder() {
+        const text = reminderText.value.trim();
+        if (reminderSubmitting) return;
+        if (!text) {
+          reminderResult.textContent = "Please speak or type a reminder first.";
+          return;
+        }
+        reminderSubmitting = true;
+        reminderSubmitBtn.disabled = true;
+        reminderSubmitBtn.textContent = "Gemini is scheduling...";
+        reminderResult.textContent =
+          "Understanding task and time with Gemini...";
+        try {
+          const response = await fetch("/ai-reminder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            const detail =
+              typeof data.detail === "string"
+                ? data.detail
+                : "Could not save reminder";
+            throw new Error(detail);
+          }
+          const formatted = new Date(data.due_at).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            dateStyle: "medium",
+            timeStyle: "short",
+          });
+          reminderResult.textContent = `Reminder #${data.reminder_id} saved: ${data.task}. Scheduled for ${formatted} IST.`;
+          speak(`Reminder saved. ${data.task}. Scheduled for ${formatted}.`);
+          reminderText.value = "";
+          await loadReminders();
+        } catch (error) {
+          reminderResult.textContent = "Error: " + error.message;
+        } finally {
+          reminderSubmitting = false;
+          reminderSubmitBtn.disabled = false;
+          reminderSubmitBtn.textContent = "✨ Create Reminder";
+        }
+      }
+
+      async function loadReminders() {
+        const list = document.getElementById("reminderList");
+        try {
+          const response = await fetch("/reminders", { cache: "no-store" });
+          if (!response.ok) throw new Error("Cannot load reminders");
+          const reminders = await response.json();
+          if (!Array.isArray(reminders))
+            throw new Error("Invalid reminder list");
+          cachedReminders = reminders;
+          list.replaceChildren();
+          if (!reminders.length) {
+            const item = document.createElement("p");
+            item.className = "small";
+            item.textContent = "No reminders saved yet.";
+            list.appendChild(item);
+          }
+          reminders.forEach((reminder) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "reminder-item";
+            const heading = document.createElement("strong");
+            heading.textContent = `#${reminder.reminder_id}  ${reminder.task}`;
+            const sub = document.createElement("small");
+            const dueDate = new Date(reminder.due_at);
+            const when = Number.isNaN(dueDate.getTime())
+              ? "Invalid date"
+              : dueDate.toLocaleString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }) + " IST";
+            sub.textContent = `${when} • ${reminder.status}`;
+            wrapper.append(heading, sub);
+            list.appendChild(wrapper);
+            // Don't announce reminders that were already overdue when the page opened.
+            if (!remindersInitialized && dueDate.getTime() <= Date.now()) {
+              remindedIds.add(reminder.reminder_id);
+            }
+          });
+          remindersInitialized = true;
+          checkDueReminders();
+        } catch (error) {
+          list.textContent = "Could not load reminders: " + error.message;
+        }
+      }
+
+      function checkDueReminders() {
+        if (!remindersInitialized) return;
+        const alerts = document.getElementById("dueReminderAlerts");
+        for (const reminder of cachedReminders) {
+          if (
+            reminder.status !== "Pending" ||
+            remindedIds.has(reminder.reminder_id)
+          )
+            continue;
+          const due = new Date(reminder.due_at);
+          if (!Number.isNaN(due.getTime()) && due.getTime() <= Date.now()) {
+            remindedIds.add(reminder.reminder_id);
+            const alert = document.createElement("div");
+            alert.className = "reminder-alert";
+            alert.textContent = `⏰ Reminder due: ${reminder.task}`;
+            alerts.prepend(alert);
+            speak(`Reminder: ${reminder.task}`);
+          }
+        }
+      }
+
+      loadReminders();
+      setInterval(async () => {
+        // Periodically refresh in case reminders were added from another tab.
+        await loadReminders();
+      }, 15000);
 
       loadComplaints();
     </script>
