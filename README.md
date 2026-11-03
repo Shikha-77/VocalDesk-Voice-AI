@@ -1,278 +1,266 @@
-# 🎙️ VocalDesk — AI-Powered Voice Complaint Management System
+# 🎙️ VocalDesk AI
 
-**Speak. Understand. Act. Resolve.**
+### Voice-to-Action Smart Campus Support Assistant
 
-VocalDesk is a full-stack Voice AI application that allows students to register campus complaints using natural speech. It combines browser-based speech recognition, Google Gemini AI, a Python FastAPI backend, and SQLite database operations to convert spoken complaints into actionable support tickets.
+**Speak. Understand. Act. Respond.**
 
-Built for the **Vocal Labs — Backend Developer (Core Tech) Hackathon**.
+VocalDesk AI is a voice-powered campus support application that converts natural-language commands into real backend actions using Google Gemini AI, FastAPI, and SQLite.
 
-## 🌐 Live Demo
+The platform enables students to register campus complaints, track complaint tickets, and create scheduled reminders using voice commands.
 
 **Live Application:** https://vocaldesk-voice-ai.onrender.com/
 
 **GitHub Repository:** https://github.com/Shikha-77/VocalDesk-Voice-AI
 
-## 🎯 Problem Statement
+---
 
-Traditional campus complaint systems often require students to manually fill out forms, select categories, enter locations, and track complaint numbers.
+## 🚀 Problem Statement
 
-VocalDesk simplifies this process with a voice-first interface.
+Traditional campus complaint management often involves manual forms, unclear issue categorization, and inconvenient tracking processes.
 
-Students can describe an issue naturally, while AI automatically extracts the relevant information and the backend registers a complaint.
+Students may also forget important academic deadlines, submissions, and scheduled activities.
+
+VocalDesk AI addresses these problems through a unified voice-based interface that allows students to communicate naturally while the application performs real backend operations.
 
 ## ✨ Key Features
 
-- 🎤 **Voice-Based Complaint Registration:** Register campus complaints using spoken language.
-- 🧠 **Gemini AI Integration:** Automatically understands complaints and extracts structured information.
-- 🏷️ **Intelligent Categorization:** Classifies issues into Electrical, Internet, Cleaning, Plumbing, Furniture, and General.
-- 📍 **Location Extraction:** Identifies locations mentioned in complaints.
-- 🎫 **Automatic Ticket Generation:** Creates a unique ticket ID for each complaint.
-- 🔊 **Voice Confirmation:** Provides spoken feedback after successful registration.
-- 🔎 **Ticket Tracking:** Retrieve complaint details and status using a ticket ID.
-- 📊 **Interactive Dashboard:** Displays complaint statistics, identified categories, and recent tickets.
-- 💾 **Database Integration:** Saves complaint records using SQLite.
-- ☁️ **Cloud Deployment:** Publicly deployed on Render.
+### 🎤 1. AI-Powered Voice Complaint Registration
 
-## 🛠️ Technology Stack
+- Register complaints through voice or text.
+- Convert speech into text using the browser's Web Speech API.
+- Analyze complaints using Google Gemini AI.
+- Automatically identify complaint category and location.
+- Generate a unique complaint ticket.
+- Store registered complaints in SQLite.
+- Provide spoken ticket confirmations.
 
-| Layer           | Technology            | Purpose                               |
-| --------------- | --------------------- | ------------------------------------- |
-| Frontend        | HTML, CSS, JavaScript | Dashboard and user interaction        |
-| Voice Input     | Web Speech API        | Speech-to-text conversion             |
-| AI Processing   | Google Gemini         | Complaint analysis and classification |
-| Backend         | Python, FastAPI       | API development and business logic    |
-| Database        | SQLite                | Ticket storage and retrieval          |
-| Voice Output    | SpeechSynthesis API   | Spoken ticket confirmation            |
-| Deployment      | Render                | Public application hosting            |
-| Version Control | Git and GitHub        | Source-code management                |
+**Supported Categories:** Electrical, Internet, Cleaning, Plumbing, Furniture, and General.
 
-## ⚙️ How VocalDesk Works
+### 🎫 2. Complaint Tracking Dashboard
 
-```text
-          Student Speaks
-                |
-                v
-       Browser Speech Recognition
-                |
-                v
-        Speech Converted to Text
-                |
-                v
-       JavaScript Sends API Request
-                |
-                v
-          FastAPI Backend
-                |
-                v
-       Google Gemini AI Analysis
-                |
-                v
-      Category + Location + Summary
-                |
-                v
-        SQLite Database INSERT
-                |
-                v
-       Unique Ticket ID Generated
-                |
-                v
-       API Response to Frontend
-                |
-                v
-      Dashboard + Voice Confirmation
-```
+- View registered complaint tickets.
+- Search complaints using ticket IDs.
+- Display complaint description, category, location, and status.
+- View dashboard statistics and recent complaints.
 
-### Example
+### 🛡️ 3. Complaint Rate Limiting and Duplicate Protection
 
-**Student says:**
+- Enforce a 30-second cooldown between successful complaint submissions from the same detected client.
+- Return HTTP 429 when the cooldown is active.
+- Detect identical normalized complaint descriptions within a 24-hour window for the same detected client.
+- Return HTTP 409 for detected duplicates.
+- Use SQLite transactions to protect complaint creation.
 
-"The fan in classroom 205 is not working."
+Client identification is currently IP-based and is intended for prototype use.
 
-**AI identifies:**
+### ⏰ 4. AI Voice Reminder Assistant
 
-- Category: Electrical
-- Location: Classroom 205
-- Description: Fan not working
+- Create reminders using natural-language voice commands.
+- Understand relative dates such as "tomorrow" and "Friday".
+- Extract reminder task, date, and time with Gemini AI.
+- Save reminders in SQLite.
+- Display reminders and their status.
+- Speak confirmation after reminder creation.
+- Show due-reminder alerts while the dashboard remains open.
 
-**Backend action:** Registers the complaint in SQLite and generates a unique ticket ID.
+**Example command:**
 
-**Voice response:** "Complaint registered successfully. Ticket number 4."
+"Remind me to submit my assignment tomorrow at 5 PM."
 
-_Ticket numbers depend on existing records._
+### 🔊 5. Voice Responses
 
-## 🔌 REST API Endpoints
-
-| Method | Endpoint                 | Description                                        |
-| ------ | ------------------------ | -------------------------------------------------- |
-| GET    | `/`                      | Serve the VocalDesk dashboard                      |
-| GET    | `/health`                | Check application health and API key configuration |
-| POST   | `/complaint`             | Register a complaint without AI                    |
-| POST   | `/ai-complaint`          | Analyze and register a complaint using Gemini      |
-| GET    | `/complaints`            | Retrieve complaint records                         |
-| GET    | `/complaint/{ticket_id}` | Retrieve a specific ticket                         |
-
-### Example API Request
-
-**POST `/ai-complaint`**
-
-```json
-{
-  "description": "The Wi-Fi in Block B is not working."
-}
-```
-
-**Example successful response:**
-
-```json
-{
-  "ticket_id": 4,
-  "description": "Wi-Fi is not working",
-  "category": "Internet",
-  "location": "Block B",
-  "status": "Open",
-  "message": "Complaint registered successfully. Ticket number 4."
-}
-```
-
-## 🚀 Run Locally
-
-### Prerequisites
-
-- Python 3.13 or a compatible Python version
-- Git
-- A Gemini API key
-- A modern browser with speech recognition support
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/Shikha-77/VocalDesk-Voice-AI.git
-cd VocalDesk-Voice-AI
-```
-
-### 2. Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-Activate it on Windows PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configure Gemini
-
-Create a `.env` file in the project root:
-
-```env
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-Never commit your real API key to GitHub.
-
-### 5. Start the backend
-
-```bash
-uvicorn main:app --reload
-```
-
-### 6. Open the application
-
-Frontend: http://127.0.0.1:8000
-
-FastAPI documentation: http://127.0.0.1:8000/docs
-
-## 🧪 Testing
-
-The application supports testing of:
-
-- Voice input and speech recognition
-- AI complaint categorization
-- Location extraction
-- Ticket creation
-- Database retrieval
-- Ticket-status lookup
-- Speech-based confirmation
-- API error handling
-
-### Sample Test
-
-**Input:** "The water tap in Block A is leaking and needs urgent repair."
-
-**Expected category:** Plumbing
-
-**Expected location:** Block A
-
-**Expected action:** Create a new ticket with an Open status.
-
-## 🏗️ Backend Design
-
-VocalDesk separates AI interpretation from database operations.
-
-Google Gemini analyzes the complaint and returns structured information. FastAPI validates the resulting data and executes the ticket creation operation using SQLite.
-
-The AI model does not directly execute database queries.
-
-SQL parameters are used for inserting and retrieving complaints.
-
-The application also supports a secondary Gemini model when the primary model request fails.
-
-## ⚠️ Current Limitations
-
-- SQLite storage on the Render Free instance is ephemeral; records may disappear after service restarts or redeployment.
-- Speech recognition availability depends on browser support and microphone permissions.
-- Gemini responses depend on external API availability and quota.
-- Complaints can be created and retrieved, but there is currently no administrative workflow for resolving them.
-- Similar complaints submitted separately can generate duplicate tickets.
-- The current prototype does not include user authentication or role-based access control.
-
-## 🔮 Future Improvements
-
-- Persistent PostgreSQL database
-- Secure admin authentication and role-based access control
-- Complaint status updates and assignment workflow
-- Duplicate complaint detection
-- Multilingual voice support
-- Email and SMS notifications
-- Complaint prioritization and analytics
-- Automated complaint routing to departments
-
-## ☁️ Deployment
-
-VocalDesk is deployed as a Python web service on Render.
-
-**Build Command:**
-
-```bash
-pip install -r requirements.txt
-```
-
-**Start Command:**
-
-```bash
-uvicorn main:app --host 0.0.0.0 --port $PORT
-```
-
-The Gemini API key is configured using Render environment variables.
-
-## 🏆 Hackathon
-
-**Event:** Vocal Labs — Round 2 Individual Hackathon
-
-**Role:** Backend Developer (Core Tech)
-
-**Challenge:** Build a Voice AI application that listens, understands, performs a real action, and responds.
-
-**Solution:** VocalDesk converts spoken student complaints into structured and trackable support tickets through AI-assisted backend processing.
+VocalDesk provides spoken confirmations using the browser's SpeechSynthesis API, completing the voice-to-action workflow.
 
 ---
 
-**VocalDesk — Turning Voice into Action.**
+## 🧠 How VocalDesk Works
+
+**Voice Input → Speech Recognition → Gemini AI → FastAPI Backend → SQLite Database → Voice Response**
+
+### Complaint Workflow
+
+1. A student speaks or types a campus complaint.
+2. Speech recognition converts the voice input into text.
+3. FastAPI checks complaint restrictions.
+4. Gemini AI extracts the complaint description, category, and location.
+5. FastAPI creates a ticket and saves it in SQLite.
+6. The dashboard displays the ticket and provides spoken confirmation.
+
+### Reminder Workflow
+
+1. A user speaks or types a reminder request.
+2. Gemini AI identifies the task and scheduled date/time.
+3. FastAPI validates the date and saves the reminder.
+4. The dashboard displays the saved reminder.
+5. VocalDesk speaks the confirmation.
+6. While the dashboard remains open, the application can display alerts for due reminders.
+
+---
+
+## 🛠️ Technology Stack
+
+| Component            | Technology              |
+| -------------------- | ----------------------- |
+| Frontend             | HTML5, CSS3, JavaScript |
+| Backend              | Python, FastAPI         |
+| AI Model Integration | Google Gemini API       |
+| Speech Recognition   | Web Speech API          |
+| Text-to-Speech       | SpeechSynthesis API     |
+| Database             | SQLite                  |
+| API Testing          | FastAPI Swagger UI      |
+| Deployment           | Render                  |
+| Version Control      | Git and GitHub          |
+
+---
+
+## 📁 Project Structure
+
+    VocalDesk/
+    ├── main.py
+    ├── index.html
+    ├── requirements.txt
+    ├── README.md
+    ├── .gitignore
+    └── .env                  # Local environment variables; not committed
+
+Additional local development files include the SQLite database and Python virtual environment.
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint                 | Purpose                                      |
+| ------ | ------------------------ | -------------------------------------------- |
+| GET    | `/`                      | Serve the dashboard                          |
+| GET    | `/health`                | Check backend health                         |
+| POST   | `/complaint`             | Register a standard complaint                |
+| POST   | `/ai-complaint`          | Analyze and register an AI-powered complaint |
+| GET    | `/complaints`            | Retrieve registered complaints               |
+| GET    | `/complaint/{ticket_id}` | Retrieve a complaint by ID                   |
+| POST   | `/reminders`             | Create a reminder                            |
+| GET    | `/reminders`             | Retrieve saved reminders                     |
+| POST   | `/ai-reminder`           | Create a reminder using Gemini AI            |
+
+**Interactive API documentation:** `/docs`
+
+---
+
+## 💻 Running Locally
+
+### Prerequisites
+
+- Python 3.10 or later
+- Google Gemini API key
+- Internet connection for Gemini AI requests
+- A browser supporting speech recognition
+
+### 1. Clone the repository
+
+    git clone https://github.com/Shikha-77/VocalDesk-Voice-AI.git
+    cd VocalDesk-Voice-AI
+
+### 2. Create and activate a virtual environment
+
+Windows PowerShell:
+
+    python -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+
+### 3. Install dependencies
+
+    pip install -r requirements.txt
+
+### 4. Configure environment variables
+
+Create a `.env` file in the project root:
+
+    GEMINI_API_KEY=your_gemini_api_key_here
+
+Never commit the actual API key to GitHub.
+
+### 5. Start the backend
+
+    uvicorn main:app --reload
+
+### 6. Open the application
+
+Dashboard:
+
+http://127.0.0.1:8000/
+
+Swagger API Documentation:
+
+http://127.0.0.1:8000/docs
+
+---
+
+## ☁️ Deployment
+
+The project is deployed using Render.
+
+**Build Command:**
+
+    pip install -r requirements.txt
+
+**Start Command:**
+
+    uvicorn main:app --host 0.0.0.0 --port $PORT
+
+Configure the `GEMINI_API_KEY` environment variable through Render's environment settings.
+
+**Live Demo:** https://vocaldesk-voice-ai.onrender.com/
+
+---
+
+## 🔐 Security and Reliability
+
+The prototype includes server-side complaint cooldown enforcement, duplicate complaint checks, input validation, and environment-variable-based API key management.
+
+### Current Limitations
+
+- Authentication and per-user access control are not yet implemented.
+- Client identification uses IP addresses, which may be shared between users.
+- Similar complaints written with different wording may not be recognized as duplicates.
+- Reminder alerts require the browser page to remain open.
+- Background push notifications, SMS, and email reminders are not implemented.
+- SQLite data on Render's ephemeral filesystem may be lost after restarts or redeployments.
+- Gemini AI requests require a working internet connection and an available model.
+
+The deployed application is a functional hackathon prototype, not a production-ready private student records platform.
+
+---
+
+## 🔮 Future Enhancements
+
+- Student and administrator authentication
+- Role-based complaint management
+- Complaint assignment and resolution workflows
+- Persistent PostgreSQL database
+- Email and push notifications
+- Background reminder scheduling
+- Multilingual voice support
+- Enhanced semantic duplicate complaint detection
+- Department-specific ticket routing
+- Analytics and administrative reporting
+
+---
+
+## 🎯 Hackathon Objective
+
+VocalDesk AI was developed to demonstrate a practical Voice AI application capable of understanding natural-language requests and converting them into meaningful backend actions.
+
+The application follows the required workflow:
+
+**Voice Input → AI Understanding → Real Action → Voice Output**
+
+The project showcases backend API development, structured AI responses, database operations, rate limiting, deployment, and user-facing voice interaction.
+
+---
+
+## 👩‍💻 Project Developer
+
+Developed as an individual Voice AI hackathon project for the Vocal Labs Backend Developer (Core Tech) opportunity.
+
+---
+
+**VocalDesk AI — Turning Voice into Action.**
