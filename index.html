@@ -3,122 +3,659 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>VocalDesk - Voice Complaint Assistant</title>
+    <title>VocalDesk AI | Smart Campus Support</title>
     <style>
+      :root {
+        --bg: #080e1c;
+        --panel: #111b2e;
+        --panel2: #17243a;
+        --line: #26354e;
+        --text: #f3f7ff;
+        --muted: #94a5c2;
+        --blue: #4d9dff;
+        --purple: #a78bfa;
+        --green: #34d399;
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
-        font-family: Arial, sans-serif;
-        background: #f1f5f9;
-        text-align: center;
-        padding: 40px 15px;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          Segoe UI,
+          Arial,
+          sans-serif;
       }
-      .container {
-        max-width: 600px;
+      .layout {
+        display: flex;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 245px;
+        padding: 28px 20px;
+        border-right: 1px solid var(--line);
+        background: #0d1627;
+      }
+      .logo {
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: -1px;
+      }
+      .logo span {
+        color: var(--blue);
+      }
+      .small {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .nav {
+        margin-top: 44px;
+        padding: 14px 16px;
+        background: #1d3150;
+        border-radius: 12px;
+        color: #b7dcff;
+        font-weight: 600;
+      }
+      .sidebar-bottom {
+        margin-top: 60px;
+        border: 1px solid var(--line);
+        padding: 16px;
+        border-radius: 14px;
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        margin-right: 6px;
+      }
+      .main {
+        flex: 1;
+        padding: 32px;
+        max-width: 1500px;
         margin: auto;
-        padding: 30px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px #0001;
       }
-      button {
-        padding: 14px 25px;
-        margin: 10px;
-        border: none;
-        border-radius: 8px;
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+      }
+      h1 {
+        margin: 6px 0;
+        font-size: 30px;
+        letter-spacing: -1px;
+      }
+      h2 {
+        font-size: 18px;
+        margin: 0 0 18px;
+      }
+      .subtitle {
+        color: var(--muted);
+        margin: 5px 0 24px;
+      }
+      .tag {
+        color: var(--green);
+        background: #12352f;
+        border: 1px solid #246451;
+        border-radius: 30px;
+        padding: 9px 14px;
+        font-size: 12px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin: 25px 0;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+      }
+      .stat-label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .stat-number {
+        font-size: 34px;
+        font-weight: 800;
+        margin-top: 12px;
+      }
+      .blue {
+        color: var(--blue);
+      }
+      .green {
+        color: var(--green);
+      }
+      .purple {
+        color: var(--purple);
+      }
+      .columns {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 18px;
+      }
+      .voice-card {
+        text-align: center;
+        background: radial-gradient(ellipse at top, #203d70 0%, #111b2e 65%);
+      }
+      .mic {
+        margin: 20px auto;
+        width: 112px;
+        height: 112px;
+        border-radius: 50%;
+        border: 1px solid #5caaff;
+        background: linear-gradient(145deg, #327bfc, #7654e8);
         color: white;
-        background: #2563eb;
+        font-size: 45px;
         cursor: pointer;
+        box-shadow:
+          0 0 0 12px #408bff15,
+          0 0 45px #397cff45;
+        transition: 0.2s;
+      }
+      .mic:hover {
+        transform: scale(1.05);
+      }
+      .mic.listening {
+        animation: pulse 1.2s infinite;
+        background: linear-gradient(145deg, #ef4444, #a855f7);
+      }
+      @keyframes pulse {
+        50% {
+          box-shadow:
+            0 0 0 25px #4d9dff15,
+            0 0 65px #a78bfa99;
+        }
+      }
+      textarea,
+      input {
+        width: 100%;
+        background: #0a1425;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        color: white;
+        padding: 14px;
+        font: inherit;
+        outline: none;
       }
       textarea {
-        width: 95%;
-        height: 100px;
-        padding: 10px;
+        min-height: 95px;
+        resize: vertical;
+        margin: 15px 0;
       }
-      #result {
-        background: #eff6ff;
-        padding: 20px;
+      textarea:focus,
+      input:focus {
+        border-color: var(--blue);
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+      .primary {
+        background: linear-gradient(90deg, #347ef6, #7955ec);
+        border: 0;
+        color: white;
+        padding: 14px 20px;
+        border-radius: 11px;
+        font-weight: 700;
+        width: 100%;
+      }
+      .primary:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .secondary {
+        background: #1d3150;
+        color: #cfe4ff;
+        border: 1px solid #31517b;
+        padding: 12px 16px;
         border-radius: 10px;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 10px 0;
+      }
+      .response {
+        background: #0b2331;
+        border: 1px solid #235466;
+        border-radius: 12px;
+        padding: 15px;
+        color: #a5f3e1;
+        min-height: 60px;
+        margin-top: 18px;
+        text-align: left;
+        overflow-wrap: anywhere;
+      }
+      .lookup {
+        display: flex;
+        gap: 8px;
+        margin: 15px 0;
+      }
+      .lookup input {
+        min-width: 0;
+      }
+      .lookup button {
+        white-space: nowrap;
+      }
+      .history {
+        margin-top: 18px;
+      }
+      .history-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th {
+        text-align: left;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      td,
+      th {
+        padding: 14px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        overflow-wrap: anywhere;
+      }
+      .category {
+        color: #bdacff;
+        background: #352750;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        display: inline-block;
+        white-space: nowrap;
+        word-break: normal;
+        flex-shrink: 0;
+      }
+      .open {
+        color: #facc15;
+        font-size: 12px;
+      }
+      .footer {
+        color: var(--muted);
+        text-align: center;
+        font-size: 12px;
+        margin: 25px 0 0;
+      }
+      @media (max-width: 900px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          padding: 18px;
+        }
+        .columns {
+          grid-template-columns: 1fr;
+        }
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 25px;
+        }
       }
     </style>
   </head>
+
   <body>
-    <div class="container">
-      <h1>🎙️ VocalDesk</h1>
-      <p>AI Voice Complaint Assistant</p>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo">🎙 Vocal<span>Desk</span></div>
+        <p class="small">INTELLIGENT CAMPUS SUPPORT</p>
+        <div class="nav">◈ &nbsp; Dashboard</div>
+        <div class="sidebar-bottom">
+          <div><span class="dot"></span> Voice Assistant</div>
+          <p class="small">AI-powered campus complaint management</p>
+          <p class="small">Built with FastAPI + Gemini</p>
+        </div>
+      </aside>
 
-      <button onclick="startListening()">🎤 Speak Complaint</button>
+      <main class="main">
+        <header class="top">
+          <div>
+            <p class="small">SMART CAMPUS / OVERVIEW</p>
+            <h1>AI Support Dashboard</h1>
+          </div>
+          <span class="tag">● Voice AI Ready</span>
+        </header>
 
-      <h3>Your Complaint</h3>
-      <textarea id="complaint" placeholder="Speak or type here"></textarea>
+        <p class="subtitle">
+          Speak naturally. Let AI understand and register your campus issue.
+        </p>
 
-      <br />
-      <button onclick="submitComplaint()">Submit Complaint</button>
+        <section class="stats">
+          <div class="card">
+            <div class="stat-label">Total Complaints</div>
+            <div class="stat-number blue" id="total">—</div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Open Tickets</div>
+            <div class="stat-number purple" id="openCount">—</div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Categories Identified</div>
+            <div class="stat-number green" id="categories">—</div>
+          </div>
+        </section>
 
-      <h3>Response</h3>
-      <div id="result">Ready to listen...</div>
+        <section class="columns">
+          <div class="card voice-card">
+            <h2>AI Voice Assistant</h2>
+            <p class="small">Tap the microphone and describe your issue</p>
+
+            <button
+              class="mic"
+              id="micBtn"
+              onclick="startListening()"
+              aria-label="Start voice recognition"
+            >
+              🎙
+            </button>
+
+            <div class="status" id="listenStatus">Ready to listen</div>
+
+            <textarea
+              id="complaint"
+              placeholder="Your speech appears here. You can also type a complaint."
+            ></textarea>
+
+            <button class="primary" id="submitBtn" onclick="submitComplaint()">
+              ✨ Analyze & Register Complaint
+            </button>
+
+            <div class="response" id="result" role="status">
+              Your AI assistant is ready.
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Ticket Tracking</h2>
+            <p class="small">Check the status of an existing complaint.</p>
+
+            <div class="lookup">
+              <input
+                type="number"
+                min="1"
+                id="ticketId"
+                placeholder="Enter ticket ID"
+              />
+              <button class="secondary" onclick="checkTicket()">Check</button>
+            </div>
+
+            <div class="response" id="ticketResult">
+              Your ticket details will appear here.
+            </div>
+
+            <div style="margin-top: 28px">
+              <h2>How VocalDesk Works</h2>
+              <p class="small">🎤 1. Speak your complaint</p>
+              <p class="small">🧠 2. Gemini understands the problem</p>
+              <p class="small">⚙️ 3. FastAPI creates a real ticket</p>
+              <p class="small">🔊 4. Receive spoken confirmation</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card history">
+          <div class="history-top">
+            <h2>Recent Complaints</h2>
+            <button class="secondary" onclick="loadComplaints()">
+              ↻ Refresh
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticket</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="ticketTable">
+                <tr>
+                  <td colspan="5">Loading complaints...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="footer">VocalDesk AI • Voice-to-Action Campus Support</p>
+      </main>
     </div>
 
     <script>
       const result = document.getElementById("result");
       const complaint = document.getElementById("complaint");
+      const submitBtn = document.getElementById("submitBtn");
+      const micBtn = document.getElementById("micBtn");
+      const listenStatus = document.getElementById("listenStatus");
+
+      let submitting = false;
+      let listening = false;
+
+      function speak(text) {
+        if (!("speechSynthesis" in window)) return;
+        speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-IN";
+        utterance.rate = 0.95;
+        speechSynthesis.speak(utterance);
+      }
 
       function startListening() {
+        if (listening) return;
+
         const SpeechRecognition =
           window.SpeechRecognition || window.webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
-          result.innerText = "Use Chrome for voice recognition.";
+          result.textContent =
+            "Speech recognition is unavailable in this browser. Try Chrome.";
           return;
         }
 
         const recognition = new SpeechRecognition();
         recognition.lang = "en-IN";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+          listening = true;
+          micBtn.classList.add("listening");
+          listenStatus.textContent = "Listening to your voice...";
+        };
 
         recognition.onresult = (event) => {
           complaint.value = event.results[0][0].transcript;
-          result.innerText = "Voice recognized!";
+          result.textContent = "Voice recognized. Review your text and submit.";
         };
 
         recognition.onerror = (event) => {
-          result.innerText = "Microphone error: " + event.error;
+          result.textContent = "Microphone error: " + event.error;
+        };
+
+        recognition.onend = () => {
+          listening = false;
+          micBtn.classList.remove("listening");
+          listenStatus.textContent = "Ready to listen";
         };
 
         recognition.start();
-        result.innerText = "Listening...";
       }
 
       async function submitComplaint() {
         const description = complaint.value.trim();
 
-        if (!description) {
-          result.innerText = "Please speak your complaint first.";
+        if (!description || submitting) {
+          if (!description) {
+            result.textContent = "Please describe a complaint first.";
+          }
           return;
         }
+
+        submitting = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "AI is analyzing your complaint...";
+        result.textContent = "Connecting to Gemini AI...";
 
         try {
           const response = await fetch("/ai-complaint", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ description }),
           });
 
-          if (!response.ok) {
-            throw new Error("Could not register complaint");
-          }
-
           const data = await response.json();
 
-          const message = `Complaint registered! Ticket number ${data.ticket_id}`;
+          if (!response.ok) {
+            throw new Error(data.detail || "AI request failed");
+          }
 
-          result.innerText = message;
+          result.textContent =
+            `Ticket #${data.ticket_id} registered successfully. ` +
+            `Category: ${data.category}. Location: ${data.location}.`;
 
-          const speech = new SpeechSynthesisUtterance(message);
-          window.speechSynthesis.speak(speech);
+          speak(
+            `Complaint registered successfully. ` +
+              `Ticket number ${data.ticket_id}.`,
+          );
+
+          document.getElementById("ticketId").value = data.ticket_id;
+          complaint.value = "";
+          await loadComplaints();
         } catch (error) {
-          result.innerText = error.message;
+          result.textContent = "Error: " + error.message;
+        } finally {
+          submitting = false;
+          submitBtn.disabled = false;
+          submitBtn.textContent = "✨ Analyze & Register Complaint";
         }
       }
+
+      async function checkTicket() {
+        const id = document.getElementById("ticketId").value;
+        const output = document.getElementById("ticketResult");
+
+        if (!id || Number(id) < 1) {
+          output.textContent = "Enter a valid ticket number.";
+          return;
+        }
+
+        try {
+          const response = await fetch("/complaint/" + encodeURIComponent(id));
+
+          if (response.status === 404) {
+            output.textContent = "Ticket not found.";
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error("Unable to fetch ticket");
+          }
+
+          const ticket = await response.json();
+
+          const message =
+            `Ticket ${ticket.ticket_id} is ${ticket.status}. ` +
+            `Category: ${ticket.category}. ` +
+            `Location: ${ticket.location}.`;
+
+          output.textContent = message;
+          speak(message);
+        } catch (error) {
+          output.textContent = "Error: " + error.message;
+        }
+      }
+
+      async function loadComplaints() {
+        const table = document.getElementById("ticketTable");
+
+        try {
+          const response = await fetch("/complaints");
+
+          if (!response.ok) {
+            throw new Error("Unable to load complaints");
+          }
+
+          const tickets = await response.json();
+
+          document.getElementById("total").textContent = tickets.length;
+
+          document.getElementById("openCount").textContent = tickets.filter(
+            (t) => t.status === "Open",
+          ).length;
+
+          document.getElementById("categories").textContent = new Set(
+            tickets.map((t) => t.category),
+          ).size;
+
+          table.replaceChildren();
+
+          if (!tickets.length) {
+            const row = table.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 5;
+            cell.textContent = "No complaints registered yet.";
+            return;
+          }
+
+          tickets.slice(0, 10).forEach((ticket) => {
+            const row = table.insertRow();
+
+            const values = [
+              "#" + ticket.ticket_id,
+              ticket.description,
+              ticket.category,
+              ticket.location,
+              ticket.status,
+            ];
+
+            values.forEach((value, index) => {
+              const cell = row.insertCell();
+              const span = document.createElement("span");
+
+              span.textContent = value ?? "Not specified";
+
+              if (index === 2) span.className = "category";
+              if (index === 4) span.className = "open";
+
+              cell.appendChild(span);
+            });
+          });
+        } catch (error) {
+          table.replaceChildren();
+          const row = table.insertRow();
+          const cell = row.insertCell();
+          cell.colSpan = 5;
+          cell.textContent = "Could not load tickets: " + error.message;
+        }
+      }
+
+      loadComplaints();
     </script>
   </body>
 </html>
