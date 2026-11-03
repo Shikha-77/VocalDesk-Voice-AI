@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VocalDesk - Voice Complaint Assistant</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f1f5f9;
+        text-align: center;
+        padding: 40px 15px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 30px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px #0001;
+      }
+      button {
+        padding: 14px 25px;
+        margin: 10px;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        background: #2563eb;
+        cursor: pointer;
+      }
+      textarea {
+        width: 95%;
+        height: 100px;
+        padding: 10px;
+      }
+      #result {
+        background: #eff6ff;
+        padding: 20px;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎙️ VocalDesk</h1>
+      <p>AI Voice Complaint Assistant</p>
+
+      <button onclick="startListening()">🎤 Speak Complaint</button>
+
+      <h3>Your Complaint</h3>
+      <textarea id="complaint" placeholder="Speak or type here"></textarea>
+
+      <br />
+      <button onclick="submitComplaint()">Submit Complaint</button>
+
+      <h3>Response</h3>
+      <div id="result">Ready to listen...</div>
+    </div>
+
+    <script>
+      const result = document.getElementById("result");
+      const complaint = document.getElementById("complaint");
+
+      function startListening() {
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+          result.innerText = "Use Chrome for voice recognition.";
+          return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-IN";
+
+        recognition.onresult = (event) => {
+          complaint.value = event.results[0][0].transcript;
+          result.innerText = "Voice recognized!";
+        };
+
+        recognition.onerror = (event) => {
+          result.innerText = "Microphone error: " + event.error;
+        };
+
+        recognition.start();
+        result.innerText = "Listening...";
+      }
+
+      async function submitComplaint() {
+        const description = complaint.value.trim();
+
+        if (!description) {
+          result.innerText = "Please speak your complaint first.";
+          return;
+        }
+
+        try {
+          const response = await fetch("/ai-complaint", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ description }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Could not register complaint");
+          }
+
+          const data = await response.json();
+
+          const message = `Complaint registered! Ticket number ${data.ticket_id}`;
+
+          result.innerText = message;
+
+          const speech = new SpeechSynthesisUtterance(message);
+          window.speechSynthesis.speak(speech);
+        } catch (error) {
+          result.innerText = error.message;
+        }
+      }
+    </script>
+  </body>
+</html>
